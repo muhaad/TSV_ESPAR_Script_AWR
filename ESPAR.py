@@ -170,8 +170,8 @@ push_script()
 ##Create CPW##
 script = script + f"PyAttributeSet_1 = PyStructure_1.GetAttributeSet(0)\n"
 script = script + f"gnd = PyGeometry_1.Box(\"Box_gnd\", \"World\", \"Perfect Conductor\", \"0, -gnd_w/2, pcb_t\", \"antenna_r+fl, gnd_w, metal_t\", True)\n"
-script = script + f"CPW = PyGeometry_1.Box(\"Box_125\", \"World\", \"Perfect Conductor\", \"antenna_r, -fw/2, pcb_t\", \"fl-fw*2, fw, metal_t\", True)\n"
-script = script + f"CPW_blank = PyGeometry_1.Box(\"Box_125\", \"World\", \"Air\", \"0, -(cpw_g+fw/2), pcb_t\", \"antenna_r+fl-fw, fw+cpw_g*2, metal_t\", True)\n"
+script = script + f"CPW = PyGeometry_1.Box(\"Box_125\", \"World\", \"Perfect Conductor\", \"antenna_r, -fw/2, pcb_t\", \"fl, fw, metal_t\", True)\n"
+script = script + f"CPW_blank = PyGeometry_1.Box(\"Box_125\", \"World\", \"Air\", \"0, -(cpw_g+fw/2), pcb_t\", \"antenna_r+fl, fw+cpw_g*2, metal_t\", True)\n"
 script = script + f"CPW_transistion = PyGeometry_1.Cylinder(\"Cylinder_{n}\", \"World\", \"Air\", \"0, 0, pcb_t\", \"0, 0, 1\", \"metal_t\", \"antenna_r\", True)\n"
 script = script + f"PyBoolean_gnd = PyGeometry_1.Boolean(\"Subtraction_1\", \"World\", \"Perfect Conductor\", \"Subtraction\", (gnd.Get_ISolid()), (CPW_blank.Get_ISolid()), \"True\", True)\n"
 script = script + f"PyBoolean_gnd.Get_IBoolean().AddTools((CPW_transistion.Get_ISolid()), PyGeometry_1)\n"
@@ -182,14 +182,27 @@ script = script + f"feedline = PyGeometry_1.Box(\"Box_125\", \"World\", \"Perfec
 script = script + f"feedline_blank = PyGeometry_1.Box(\"Box_125\", \"World\", \"Air\", \"d1, -(cpw_g+fw/2), pcb_t\", \"antenna_r, fw+cpw_g*2, metal_t\", True)\n"
 script = script + f"PyBoolean_metal.Get_IBoolean().AddTools((feedline_blank.Get_ISolid()), PyGeometry_1)\n"
 
+
+# PyRF_Port_1 = PyAttributeSet_1.NewExcitation("RF_Port", "Port_1")
+# PyApplication_2 = PySolid_62.Get_ISolid().ApplyAttributeFaces(PyRF_Port_1, (0,), (5,), 0)
+# PyRF_Port_2 = PyAttributeSet_1.NewExcitation("RF_Port", "Port_2")
+# PyApplication_3 = PyBoolean_20.Get_ISolid().ApplyAttributeFaces(PyRF_Port_2, (0, 0), (9, 2), 0)
+# PyRF_Port_2.Get_IRFPort().SetExNumber("-1")
+
+
 ##Create RF Port 1##
-script = script + f"PySolid_port_1 = PyGeometry_1.SurfaceRectangle(\"Rectangle_100\", \"World\", \"Air\", \"XY\", \"antenna_r+fl-fw*2, -fw/2, pcb_t+metal_t/2\", \"fw, fw, 0\", True)\n"
 script = script + f"PyRF_Port_1 = PyAttributeSet_1.NewExcitation(\"RF_Port\", \"Port_1\")\n"
-script = script + f"PyApplication_1 = PySolid_port_1.Get_ISolid().ApplyAttributeFaces(PyRF_Port_1, (0,), (0,), 0)\n"
-script = script + f"PyRF_Port_1.Get_IRFPort().SetExType(\"Lumped\")\n"
+script = script + f"PyApplication_1 = CPW.Get_ISolid().ApplyAttributeFaces(PyRF_Port_1, (0,), (5,), 0)\n"
+script = script + f"PyRF_Port_1.Get_IRFPort().SetExType(\"Wave\")\n"
+
+# ##Create RF Port -1##
+script = script + f"PyRF_Port_n1 = PyAttributeSet_1.NewExcitation(\"RF_Port\", \"Port_2\")\n"
+script = script + f"PyApplication_1 = PyBoolean_gnd.Get_ISolid().ApplyAttributeFaces(PyRF_Port_n1, (0, 0), (9, 2), 0)\n"
+script = script + f"PyRF_Port_n1.Get_IRFPort().SetExType(\"Wave\")\n"
+script = script + f"PyRF_Port_n1.Get_IRFPort().SetExNumber(\"-1\")\n"
+
 
 ##create vias##
-
 num_vias = int(fl/via_s)
 
 for i in range(1, num_vias):
